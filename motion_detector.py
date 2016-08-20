@@ -6,11 +6,20 @@ import datetime
 import imutils
 import time
 import cv2
+####参数区####
+delta_thresh = 10
+resolution =  [640, 480]
+min_area=  5000
+
+
+#### 变量初始化####
+
+avg = None
 
 # 创建参数解析器并解析参数
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video", help="path to the video file")
-ap.add_argument("-a", "--min-area", type=int, default=500, help="minimum area size")
+ap.add_argument("-a", "--min_area", type=int, default=4000, help="minimum area size")
 args = vars(ap.parse_args())
 
 # 如果video参数为None，那么我们从摄像头读取数据
@@ -41,14 +50,21 @@ while True:
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
-    # 如果第一帧是None，对其进行初始化
-    if firstFrame is None:
-        firstFrame = gray
+    # 如果平均帧是None，初始化它
+    if avg is None:
+        print "[INFO] starting background model..."
+        avg = gray.copy().astype("float")
+  #      rawCapture.truncate(0)
         continue
 
-# 计算当前帧和第一帧的不同
-    frameDelta = cv2.absdiff(firstFrame, gray)
-    thresh = cv2.threshold(frameDelta, 25, 255, cv2.THRESH_BINARY)[1]
+    # accumulate the weighted average between the current frame and
+    # previous frames, then compute the difference between the current
+    # frame and running average
+    cv2.accumulateWeighted(gray, avg, 0.5)
+    # 计算当前帧和第一帧的不同
+    frameDelta = cv2.absdiff(gray, cv2.convertScaleAbs(avg))
+
+    thresh = cv2.threshold(frameDelta, delta_thresh, 255, cv2.THRESH_BINARY)[1]
 
     # 扩展阀值图像填充孔洞，然后找到阀值图像上的轮廓
     thresh = cv2.dilate(thresh, None, iterations=2)
