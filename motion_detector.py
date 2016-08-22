@@ -32,7 +32,7 @@ else:
     camera = cv2.VideoCapture(args["video"])
 
 # 初始化视频流的第一帧
-firstFrame = None
+#firstFrame = None
 
 
 # 遍历视频的每一帧
