@@ -7,6 +7,8 @@
 # 
 # 2017/01/17
 # 可以标出脸部区域，但没有用命令控制
+# 命令格式：
+# python ./demos/classifier_3.py infer ./generated-embeddings/classifier.pkl ./ztestdata/test.jpg --multi
 
 import time
 
